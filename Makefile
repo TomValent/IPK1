@@ -5,7 +5,7 @@ hinfosvc: hinfosvc.o
 	$(C) $(CFLAGS) hinfosvc.o -o hinfosvc
 
 hinfosvc.o: hinfosvc.c
-	$(C) $(CFLAGS) -c hinfosvc.c -o hinfosvc.o
+	$(C) $(CFLAGS) -c server.c -o hinfosvc.o
 
 clean:
 	rm *.o hinfosvc -f
