@@ -20,9 +20,22 @@ int argCheck(char *portNumber)
     return port;
 }
 
-int socketEnable(int *networkSocket, int port)
+int socketEnable(int *networkSocket, char *host, int port)
 {
-    networkSocket = socket(AF_INET, SOCK_STREAM, 0);         //create socket
+    *networkSocket = socket(AF_INET, SOCK_STREAM, 0);         //create socket
+    if(*networkSocket < 0)
+    {
+        fprintf(stderr, "Cant create socket.\n");
+        exit(1);
+    }
+    struct hostent *server;
+    server = gethostbyname(host);
+    if(server == NULL)
+    {
+        fprintf(stderr, "Couldn`t find such host.\n");
+        exit(1);
+    }
+
     struct sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(port);
@@ -32,11 +45,11 @@ int socketEnable(int *networkSocket, int port)
     if(status == -1)
     {
         fprintf(stderr, "Cant connect to server.\n");
-        exit(3);
+        exit(1);
     }
 
     char response[256];
-    recv(networkSocket, &response, sizeof(response), 0);
+    recv(*networkSocket, &response, sizeof(response), 0);
 
     printf("Server run on port %d\n", port);
     return 0;
@@ -52,10 +65,13 @@ int main(int argc, char **argv) {
     if(port == -1)
     {
         fprintf(stderr, "Port number must be an integer.");
-        return 2;
+        return 1;
     }
     int networkSocket;
-    socketEnable(&networkSocket, port);
+    char *host;
+    socketEnable(&networkSocket, host, port);
+
+
 
     close(networkSocket);
     return 0;
