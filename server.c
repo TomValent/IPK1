@@ -4,9 +4,9 @@
 #include <unistd.h>
 
 #include <sys/socket.h>
-#include <sys/types.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
-#include <netdb.h>
+#include <unistd.h>
 
 
 int argCheck(char *portNumber)
@@ -20,19 +20,12 @@ int argCheck(char *portNumber)
     return port;
 }
 
-int socketEnable(int *networkSocket, char *host, int port)
+int socketEnable(int *networkSocket, int port)
 {
     *networkSocket = socket(AF_INET, SOCK_STREAM, 0);         //create socket
     if(*networkSocket < 0)
     {
-        fprintf(stderr, "Cant create socket.\n");
-        exit(1);
-    }
-    struct hostent *server;
-    server = gethostbyname(host);
-    if(server == NULL)
-    {
-        fprintf(stderr, "Couldn`t find such host.\n");
+        fprintf(stderr, "Couldn`t create socket.\n");
         exit(1);
     }
 
@@ -41,17 +34,20 @@ int socketEnable(int *networkSocket, char *host, int port)
     serverAddress.sin_port = htons(port);
     serverAddress.sin_addr.s_addr = INADDR_ANY;
 
-    int status = connect(*networkSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
-    if(status == -1)
+    if(bind(*networkSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0)
     {
-        fprintf(stderr, "Cant connect to server.\n");
+        fprintf(stderr, "Couldn`t connect to server.\n");
         exit(1);
     }
+    printf("Binding successfull.\n");
 
-    char response[256];
-    recv(*networkSocket, &response, sizeof(response), 0);
-
+    if(listen(*networkSocket , 3) < 0)
+    {
+        fprintf(stderr, "Couldn`t listen to server.\n");
+        exit(1);
+    }
     printf("Server run on port %d\n", port);
+    printf("Waiting for incoming connections...\n");
     return 0;
 }
 
@@ -68,10 +64,30 @@ int main(int argc, char **argv) {
         return 1;
     }
     int networkSocket;
-    char *host;
-    socketEnable(&networkSocket, host, port);
 
+    socketEnable(&networkSocket, port);
 
+    struct sockaddr_in client;
+    int c = sizeof(struct sockaddr_in), new_socket;
+
+    printf("pepega");
+    char *response;// = "HTTP/1.1 200 OK\r\nContent-Type: text/plain;\r\n\r\n" ;
+    //write(networkSocket, response, strlen(response));
+
+    while((new_socket = accept(networkSocket, (struct sockaddr *)&client, (socklen_t*)&c)))
+    {
+        printf("Connection accepted");
+
+        response = "Hello there, welcome on my server";
+        write(new_socket , response , strlen(response));
+    }
+    if (new_socket < 0)
+    {
+        printf("Accept failed.\n");
+    }
+
+    char *client_ip = inet_ntoa(client.sin_addr);
+    int client_port = ntohs(client.sin_port);
 
     close(networkSocket);
     return 0;
