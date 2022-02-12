@@ -4,9 +4,7 @@
 #include <unistd.h>
 
 #include <sys/socket.h>
-#include <arpa/inet.h>
 #include <netinet/in.h>
-#include <unistd.h>
 
 
 int argCheck(char *portNumber)
@@ -20,20 +18,11 @@ int argCheck(char *portNumber)
     return port;
 }
 
-void hostname(int new_socket)
+void socketEnable(int port)
 {
-    FILE *file = fopen("/proc/sys/kernel/hostname", "r");
-    char host[100];
-    fscanf(file, "%[^\n]", host);
-    write(new_socket, host, strlen(host));
-    fclose(file);
-}
-
-
-void socketEnable(int *networkSocket, int port)
-{
-    *networkSocket = socket(AF_INET, SOCK_STREAM, 0);         //create socket
-    if(*networkSocket < 0)
+    int networkSocket;
+    networkSocket = socket(AF_INET, SOCK_STREAM, 0);         //create socket
+    if(networkSocket < 0)
     {
         fprintf(stderr, "Couldn`t create socket.\n");
         exit(1);
@@ -45,44 +34,61 @@ void socketEnable(int *networkSocket, int port)
     serverAddress.sin_addr.s_addr = INADDR_ANY;
 
     int opt = 1;
-    setsockopt(*networkSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    setsockopt(networkSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-    if(bind(*networkSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0)
+    if(bind(networkSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0)
     {
         fprintf(stderr, "Couldn`t connect to server.\n");
         exit(1);
     }
 
-    if(listen(*networkSocket , 3) < 0)
+    if(listen(networkSocket , 3) < 0)
     {
         fprintf(stderr, "Couldn`t listen to server.\n");
         exit(1);
     }
     printf("Server run on port %d\n", port);
-    printf("Waiting for incoming connections...\n");
 
     int new_socket;
-    char *response;
+    char *header = "HTTP/1.1 200 OK\r\nContent-Type: text/plain;\r\n\r\n";
+    int len = sizeof(serverAddress);
 
     while(1)
     {
-        if((new_socket = accept(*networkSocket, NULL, NULL) < 0))
+        printf("\nWaiting for incoming connections...\n");
+        if ((new_socket = accept(networkSocket, (struct sockaddr *)&serverAddress, (socklen_t*)&len))<0)
         {
-            fprintf(stderr,"Couldn`t accept connection.\n");
+            fprintf(stderr, "Couldn`t accept connection.\n");
             exit(1);
         }
-        char request[1024] = {0};
-        read(new_socket, request, 1024);
-        printf("%s\n", request);
 
-        response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain;\r\n\r\n" ;
-        send(new_socket, response, strlen(response), 0);
+        char buffer[1024] = {0};
+        read(new_socket , buffer, 1024);
+        printf("%s\n",buffer);
 
-        response = "Hello there, welcome on my server\n";
-        send(new_socket, response , strlen(response), 0);
+        if(strncmp(buffer, "GET /hostname ", 1024) == 0)
+        {
+            FILE *file = fopen("/proc/sys/kernel/hostname", "r");
+            char host[100];
+            fscanf(file, "%[^\n]", host);
+            send(new_socket, host, strlen(host), 0);
+            fclose(file);
+        }
+        /*if(strncmp(buffer, "GET /cpu-name ", 1024) == 0)
+        {
+            popen("cat /proc/cpuinfo | grep "model name" | head -n 1 | awk '...)
+        }*/
+        if(strncmp(buffer, "GET /load ", 1024) == 0)
+        {
+            //FILE *file = fopen("/proc/sys/kernel/hostname", "r");
+            char load[100];
+            fscanf(file, "%[^\n]", load);
+            send(new_socket, load, strlen(load), 0);
+            fclose(file);
+        }
 
-        //if strncmp GET/hostname, request == 0 // funkcia hostname
-
+        write(new_socket , header , strlen(header));
+        printf("Hello there, welcome on my server.");
         close(new_socket);
     }
 }
@@ -100,8 +106,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    int networkSocket;
-    socketEnable(&networkSocket, port);
+    socketEnable(port);
 
     return 0;
 }
