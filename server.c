@@ -20,27 +20,17 @@ int argCheck(char *portNumber)
     return port;
 }
 
-void CPU()
-{
-
-}
-
 void hostname(int new_socket)
 {
-    char hostname[100]; //somehow with read()
-    /*gethostname(hostname, 100);
-    char *response = "Hostname: ";
-    write(new_socket , response , strlen(response));
-    write(new_socket, hostname, strlen(hostname));*/
-
+    FILE *file = fopen("/proc/sys/kernel/hostname", "r");
+    char host[100];
+    fscanf(file, "%[^\n]", host);
+    write(new_socket, host, strlen(host));
+    fclose(file);
 }
 
-void load()
-{
 
-}
-
-int socketEnable(int *networkSocket, int port)
+void socketEnable(int *networkSocket, int port)
 {
     *networkSocket = socket(AF_INET, SOCK_STREAM, 0);         //create socket
     if(*networkSocket < 0)
@@ -62,7 +52,6 @@ int socketEnable(int *networkSocket, int port)
         fprintf(stderr, "Couldn`t connect to server.\n");
         exit(1);
     }
-    printf("Binding successfull.\n");
 
     if(listen(*networkSocket , 3) < 0)
     {
@@ -72,31 +61,30 @@ int socketEnable(int *networkSocket, int port)
     printf("Server run on port %d\n", port);
     printf("Waiting for incoming connections...\n");
 
-    struct sockaddr_in client;
-    int c = sizeof(struct sockaddr_in), new_socket;
+    int new_socket;
     char *response;
 
-    while((new_socket = accept(*networkSocket, (struct sockaddr *)&client, (socklen_t*)&c)))
+    while(1)
     {
+        if((new_socket = accept(*networkSocket, NULL, NULL) < 0))
+        {
+            fprintf(stderr,"Couldn`t accept connection.\n");
+            exit(1);
+        }
+        char request[1024] = {0};
+        read(new_socket, request, 1024);
+        printf("%s\n", request);
+
         response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain;\r\n\r\n" ;
-        write(new_socket, response, strlen(response));
+        send(new_socket, response, strlen(response), 0);
 
         response = "Hello there, welcome on my server\n";
-        write(new_socket , response , strlen(response));
+        send(new_socket, response , strlen(response), 0);
 
-        CPU();
-        hostname(new_socket);
-        load();
+        //if strncmp GET/hostname, request == 0 // funkcia hostname
 
-        close(*networkSocket);
         close(new_socket);
     }
-    if (new_socket < 0)
-    {
-        printf("Accept failed.\n");
-    }
-
-    return 0;
 }
 
 int main(int argc, char **argv) {
@@ -111,8 +99,8 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Port number must be an integer.");
         return 1;
     }
-    int networkSocket;
 
+    int networkSocket;
     socketEnable(&networkSocket, port);
 
     return 0;
