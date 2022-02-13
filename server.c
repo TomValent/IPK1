@@ -92,6 +92,7 @@ void socketEnable(int port)
             char text[100] = "", text2[100] = "";
             double load1[4], load2[4] = {0};
             fscanf(file, "%[^\n]", text);
+            printf("%s\n",text);
             char *token, **endptr = NULL, *token2;
 
             token = strtok(text, " "); //prvy
@@ -107,6 +108,7 @@ void socketEnable(int port)
 
             sleep(1);
             fscanf(file, "%[^\n]", text2);
+            printf("%s\n",text2);
             token2 = strtok(text2, " ");
 
             for(int i = 0; i < 4; i++)
@@ -114,17 +116,15 @@ void socketEnable(int port)
                 token2 = strtok(NULL, " ");
                 load2[i] = strtod(token2, endptr);
             }
-            int c1 = load1[0] + load1[1] + load1[2] - (load2[0] + load2[1] + load2[2]);
-            printf("%d\n",c1);
-            int c2 = load1[0] + load1[1] + load1[2] + load2[3] - (load2[0] + load2[1] + load2[2] + load2[3]);
-            printf("%d\n", c2);
+            double sum1 = load1[0] + load1[1] + load1[2], sum2 = load2[0] + load2[1] + load2[2],
+            sum3 = load1[0] + load1[1] + load1[2] + load2[3], sum4 = load2[0] + load2[1] + load2[2] + load2[3];
 
-            int sumLoad = c1/c2;
-            sumLoad *= 100;
-            printf("%d\n", sumLoad);
+            double cit = sum1 - sum2, men = sum3 - sum4;
+            double sumLoad = 100 * cit/men;
 
+            int result = sumLoad;
             char strLoad[5];
-            snprintf(strLoad, sizeof(sumLoad), "%d", sumLoad);
+            snprintf(strLoad, sizeof(result), "%d", result);
             strcat(strLoad, "%");
             write(new_socket, strLoad, strlen(strLoad));
             fclose(file2);
