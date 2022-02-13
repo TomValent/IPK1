@@ -120,7 +120,7 @@ void socketEnable(int port)
 
         char buffer[1024] = {0};
         read(new_socket , buffer, 1024);
-        printf("%s\n",buffer);
+        //printf("%s\n",buffer);        //get request
 
         if(strstr(buffer, "GET /hostname "))
         {
