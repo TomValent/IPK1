@@ -34,7 +34,6 @@ void load(int new_socket)
     char text[100] = "", text2[100] = "";
     double load1[4], load2[4] = {0};
     fscanf(file, "%[^\n]", text);
-    printf("%s\n",text);
     char *token, **endptr = NULL, *token2;
 
     token = strtok(text, " "); //prvy
@@ -50,7 +49,6 @@ void load(int new_socket)
 
     sleep(1);
     fscanf(file, "%[^\n]", text2);
-    printf("%s\n",text2);
     token2 = strtok(text2, " ");
 
     for(int i = 0; i < 4; i++)
@@ -109,7 +107,7 @@ void socketEnable(int port)
 
     while(1)
     {
-        printf("\nWaiting for incoming connections...\n");
+        printf("\n\nWaiting for incoming connections...\n");
         if ((new_socket = accept(networkSocket, (struct sockaddr *)&serverAddress, (socklen_t*)&len))<0)
         {
             fprintf(stderr, "Couldn`t accept connection.\n");
