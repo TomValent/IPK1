@@ -28,6 +28,50 @@ void hostname(int new_socket)
     fclose(file);
 }
 
+void load(int new_socket)
+{
+    FILE *file = fopen("/proc/stat", "r");
+    char text[100] = "", text2[100] = "";
+    double load1[4], load2[4] = {0};
+    fscanf(file, "%[^\n]", text);
+    printf("%s\n",text);
+    char *token, **endptr = NULL, *token2;
+
+    token = strtok(text, " "); //prvy
+
+    for(int i = 0; i < 4; i++)
+    {
+        token = strtok(NULL, " ");
+        load1[i] = strtod(token, endptr);
+    }
+
+    fclose(file);
+    FILE *file2 = fopen("/proc/stat", "r");
+
+    sleep(1);
+    fscanf(file, "%[^\n]", text2);
+    printf("%s\n",text2);
+    token2 = strtok(text2, " ");
+
+    for(int i = 0; i < 4; i++)
+    {
+        token2 = strtok(NULL, " ");
+        load2[i] = strtod(token2, endptr);
+    }
+    double sum1 = load1[0] + load1[1] + load1[2], sum2 = load2[0] + load2[1] + load2[2],
+            sum3 = load1[0] + load1[1] + load1[2] + load2[3], sum4 = load2[0] + load2[1] + load2[2] + load2[3];
+
+    double cit = sum1 - sum2, men = sum3 - sum4;
+    double sumLoad = 100 * cit/men;
+
+    int result = sumLoad;
+    char strLoad[5];
+    snprintf(strLoad, sizeof(result), "%d", result);
+    strcat(strLoad, "%");
+    write(new_socket, strLoad, strlen(strLoad));
+    fclose(file2);
+}
+
 void socketEnable(int port)
 {
     int networkSocket;
@@ -88,48 +132,8 @@ void socketEnable(int port)
         }*/
         if(strstr(buffer, "GET /load "))
         {
-            FILE *file = fopen("/proc/stat", "r");
-            char text[100] = "", text2[100] = "";
-            double load1[4], load2[4] = {0};
-            fscanf(file, "%[^\n]", text);
-            printf("%s\n",text);
-            char *token, **endptr = NULL, *token2;
-
-            token = strtok(text, " "); //prvy
-
-            for(int i = 0; i < 4; i++)
-            {
-                token = strtok(NULL, " ");
-                load1[i] = strtod(token, endptr);
-            }
-
-            fclose(file);
-            FILE *file2 = fopen("/proc/stat", "r");
-
-            sleep(1);
-            fscanf(file, "%[^\n]", text2);
-            printf("%s\n",text2);
-            token2 = strtok(text2, " ");
-
-            for(int i = 0; i < 4; i++)
-            {
-                token2 = strtok(NULL, " ");
-                load2[i] = strtod(token2, endptr);
-            }
-            double sum1 = load1[0] + load1[1] + load1[2], sum2 = load2[0] + load2[1] + load2[2],
-            sum3 = load1[0] + load1[1] + load1[2] + load2[3], sum4 = load2[0] + load2[1] + load2[2] + load2[3];
-
-            double cit = sum1 - sum2, men = sum3 - sum4;
-            double sumLoad = 100 * cit/men;
-
-            int result = sumLoad;
-            char strLoad[5];
-            snprintf(strLoad, sizeof(result), "%d", result);
-            strcat(strLoad, "%");
-            write(new_socket, strLoad, strlen(strLoad));
-            fclose(file2);
+            load(new_socket);
         }
-
         printf("Hello there, welcome on my server.");
         close(new_socket);
     }
