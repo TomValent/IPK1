@@ -11,4 +11,4 @@ clean:
 	rm *.o hinfosvc -f
 
 zip:
-	zip xvalen27.zip *.c Makefile
+	zip xvalen27.zip *.c Makefile README.md
