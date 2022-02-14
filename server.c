@@ -18,6 +18,23 @@ int argCheck(char *portNumber)
     return port;
 }
 
+void cpuName(int new_socket)
+{
+    char cpuName[100], text[100];
+    FILE *file = popen("cat /proc/cpuinfo | grep \"model name\" | head -1", "r");
+    fscanf(file, "%[^\n]", text);
+    int i = 13, j = 0;
+    while (text[i] != '\0')
+    {
+        cpuName[j] = text[i];
+        i++;
+        j++;
+    }
+    cpuName[j] = '\0';
+    write(new_socket, cpuName, strlen(cpuName));
+    pclose(file);
+}
+
 void hostname(int new_socket)
 {
     FILE *file = fopen("/proc/sys/kernel/hostname", "r");
@@ -126,12 +143,7 @@ void socketEnable(int port)
         }
         else if(strstr(buffer, "GET /cpu-name "))
         {
-            char cpu-name[100];
-            FILE *file = popen("cat /proc/cpuinfo | grep \"model name\" | head -n 1 | awk '...", "r");
-            fscanf(file, "%[^\n]", cpu-name);
-            printf("%s\n", cpu-name);
-            //write(new_socket, cpu-name, strlen(cpu-name));
-            pclose(file);
+            cpuName(new_socket);
         }
         else if(strstr(buffer, "GET /load "))
         {
