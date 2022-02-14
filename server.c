@@ -124,15 +124,29 @@ void socketEnable(int port)
         {
             hostname(new_socket);
         }
-        /*if(strncmp(buffer, "GET /cpu-name ", 1024) == 0)
+        else if(strstr(buffer, "GET /cpu-name "))
         {
-            popen("cat /proc/cpuinfo | grep "model name" | head -n 1 | awk '...)
-        }*/
-        if(strstr(buffer, "GET /load "))
+            char cpu-name[100];
+            FILE *file = popen("cat /proc/cpuinfo | grep \"model name\" | head -n 1 | awk '...", "r");
+            fscanf(file, "%[^\n]", cpu-name);
+            printf("%s\n", cpu-name);
+            //write(new_socket, cpu-name, strlen(cpu-name));
+            pclose(file);
+        }
+        else if(strstr(buffer, "GET /load "))
         {
             load(new_socket);
         }
-        printf("Hello there, welcome on my server.");
+        else if(strstr(buffer, "GET / HTTP/1.1"))
+        {
+            char *hello = "Hello there, welcome on my server.";
+            write(new_socket, hello, strlen(hello));
+        }
+        else
+        {
+            char *error = "Error: 404 not found";
+            write(new_socket, error, strlen(error));
+        }
         close(new_socket);
     }
 }
