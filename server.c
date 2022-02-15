@@ -49,13 +49,13 @@ void load(int new_socket)
 {
     FILE *file = fopen("/proc/stat", "r");
     char text[100] = "", text2[100] = "";
-    double load1[4], load2[4] = {0};
+    double load1[8], load2[8];
     fscanf(file, "%[^\n]", text);
     char *token, **endptr = NULL, *token2;
-
+//nacitanie hodnot
     token = strtok(text, " "); //prvy
 
-    for(int i = 0; i < 4; i++)
+    for(int i = 0; i < 8; i++)
     {
         token = strtok(NULL, " ");
         load1[i] = strtod(token, endptr);
@@ -68,15 +68,18 @@ void load(int new_socket)
     fscanf(file, "%[^\n]", text2);
     token2 = strtok(text2, " ");
 
-    for(int i = 0; i < 4; i++)
+    for(int i = 0; i < 8; i++)
     {
         token2 = strtok(NULL, " ");
         load2[i] = strtod(token2, endptr);
     }
-    double sum1 = load1[0] + load1[1] + load1[2], sum2 = load2[0] + load2[1] + load2[2],
-            sum3 = load1[0] + load1[1] + load1[2] + load2[3], sum4 = load2[0] + load2[1] + load2[2] + load2[3];
+//vypocet loadu
+    double sumA = 0, sumB = 0;
+    for(int i = 0; i < 7; i++) sumA += load1[i];
+    for(int i = 0; i < 7; i++) sumB += load2[i];
 
-    double cit = sum1 - sum2, men = sum3 - sum4;
+    double IdleA = load1[3] + load1[4], IdleB = load2[3] + load2[4];
+    double cit = (sumB - sumA) - (IdleB - IdleA), men = sumB - sumA;
     double sumLoad = 100 * cit/men;
 
     int result = sumLoad;
