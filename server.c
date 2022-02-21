@@ -160,7 +160,7 @@ void socketEnable(int port)
         }
         else
         {
-            char *error = "Error: 404 not found";
+            char *error = "Error: 404 not found\n";
             write(new_socket, error, strlen(error));
         }
         close(new_socket);
@@ -170,13 +170,13 @@ void socketEnable(int port)
 int main(int argc, char **argv) {
     if(argc != 2)
     {
-        fprintf(stderr, "Wrong number of arguments.");
+        fprintf(stderr, "Wrong number of arguments.\n");
         return 1;
     }
     int port = argCheck(argv[1]);
     if(port == -1)
     {
-        fprintf(stderr, "Port number must be an integer.");
+        fprintf(stderr, "Port number must be an integer.\n");
         return 1;
     }
 
