@@ -30,7 +30,8 @@ void cpuName(int new_socket)
         i++;
         j++;
     }
-    cpuName[j] = '\0';
+    cpuName[j] = '\n';
+    cpuName[++j] = '\0';
     write(new_socket, cpuName, strlen(cpuName));
     pclose(file);
 }
@@ -40,8 +41,8 @@ void hostname(int new_socket)
     FILE *file = fopen("/proc/sys/kernel/hostname", "r");
     char host[100];
     fscanf(file, "%[^\n]", host);
+    strcat(host, "\n");
     write(new_socket, host, strlen(host));
-    printf("host");
     fclose(file);
 }
 
@@ -85,7 +86,7 @@ void load(int new_socket)
     int result = sumLoad;
     char strLoad[5];
     snprintf(strLoad, sizeof(result), "%d", result);
-    strcat(strLoad, "%");
+    strcat(strLoad, "%\n");
     write(new_socket, strLoad, strlen(strLoad));
     fclose(file2);
 }
