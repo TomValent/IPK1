@@ -155,7 +155,7 @@ void socketEnable(int port)
         }
         else if(strstr(buffer, "GET / HTTP/1.1"))
         {
-            char *hello = "Hello there, welcome on my server.";
+            char *hello = "Hello there, welcome on my server.\n";
             write(new_socket, hello, strlen(hello));
         }
         else
