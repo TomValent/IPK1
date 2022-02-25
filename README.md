@@ -46,3 +46,10 @@ Makefile okrem prekladania obsahuje funkcie na zmazanie
 zbytočných súborov po ukončení práce so serverom príkazom ***make
 clean*** v terminále a zipovanie zdrojových súborov pomocou
 ***make zip***.
+
+### Zdroje
+[Zdroj 1](https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa) <br/>
+[Zdroj 2](https://www.binarytides.com/socket-programming-c-linux-tutorial/) <br/>
+[Zdroj 3](https://www.youtube.com/watch?v=LtXEMwSG5-8&t=1079s) <br/>
+
+Autor: Tomas Valent (xvalen27)

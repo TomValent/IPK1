@@ -12,9 +12,9 @@ int argCheck(char *portNumber)
     char *str = NULL;
     int port = strtol(portNumber, &str, 10);
     if(str[0] != '\0')
-    {
         port = -1;
-    }
+    if(port < 1024 || port > 999999999)
+        port = -1;
     return port;
 }
 
@@ -176,7 +176,7 @@ int main(int argc, char **argv) {
     int port = argCheck(argv[1]);
     if(port == -1)
     {
-        fprintf(stderr, "Port number must be an integer.\n");
+        fprintf(stderr, "Port number must be an integer in range 1024-999999999.\n");
         return 1;
     }
 
